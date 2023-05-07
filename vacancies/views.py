@@ -97,8 +97,9 @@ class VacancyUpdateView(UpdateView):
             "status": self.object.status,
             "created": self.object.created,
             "user": self.object.user_id,
-            })
-
+            "skills": list(self.object.skills.all().values_list("name", flat=True)),
+        })
+        # Не может ссылаться на ManyReltatedManager (таблица ManyToMany), поэтому выгружаем список навыков
 @method_decorator(csrf_exempt, name="dispatch")
 class VacancyDeleteView(DeleteView):
     model = Vacancy
