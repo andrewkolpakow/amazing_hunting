@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 from amazing_hunting import settings
 from django.contrib.auth.models import User
-from django.db.models import Count
+from django.db.models import Count, Avg
 
 from vacancies.models import Vacancy, Skill
 
@@ -158,7 +158,8 @@ class UserVacancyDetailView(View):
         response = {
             "items": users,
             "total": paginator.count,
-            "num_pages": paginator.num_pages
+            "num_pages": paginator.num_pages,
+            "avg": user_qs.aggregate(avg=Avg("vacancies"))["avg"]
         }
 
         return JsonResponse(response)
