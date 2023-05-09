@@ -27,7 +27,7 @@ class VacancyListView(ListView):
         if search_text:
             self.object_list = self.object_list.filter(text=search_text)
 
-        self.object_list = self.object_list.order_by("text")
+        self.object_list = self.object_list.select_related("user").prefetch_related("skills").order_by("text")
 
         """
         1 - 0:10
@@ -50,7 +50,12 @@ class VacancyListView(ListView):
         for vacancy in page_obj:
             vacancies.append({
                 "id": vacancy.id,
-                "text": vacancy.text
+                "text": vacancy.text,
+                "slug": vacancy.slug,
+                "status": vacancy.status,
+                "created": vacancy.created,
+                "username": vacancy.user.username,
+                "skills": list(map(str, vacancy.skills.all())),
             })
 
         response = {
