@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count, Avg
 
 from vacancies.models import Vacancy, Skill
-from vacancies.serializers import VacancySerializer
+from vacancies.serializers import VacancySerializer, VacancyDetailSerializer
 
 def hello(request):
     return HttpResponse("Hello World!")
@@ -75,14 +75,17 @@ class VacancyDetailView(DetailView):
     def get(self, request, *args, **kwargs):
         vacancy = self.get_object()
 
-        return JsonResponse({
-            "id": vacancy.id,
-            "text": vacancy.text,
-            "status": vacancy.status,
-            "slug": vacancy.slug,
-            "created": vacancy.created,
-            "user": vacancy.user_id,
-            })
+        # return JsonResponse({
+        #     "id": vacancy.id,
+        #     "text": vacancy.text,
+        #     "status": vacancy.status,
+        #     "slug": vacancy.slug,
+        #     "created": vacancy.created,
+        #     "user": vacancy.user_id,
+        #     })
+        # ДО СЕРИАЛИЗАТОРА МОДЕЛИ
+
+        return JsonResponse(VacancyDetailSerializer(vacancy).data, safe=False)
 
 @method_decorator(csrf_exempt, name="dispatch")
 class VacancyCreateView(CreateView):
