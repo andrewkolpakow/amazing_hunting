@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from vacancies.models import Vacancy
+from vacancies.models import Vacancy, Skill
 
 # class VacancySerializer(serializers.Serializer):
 #     id = serializers.IntegerField()
@@ -35,6 +35,26 @@ class VacancyDetailSerializer(serializers.ModelSerializer):
 
 class VacancyCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
+    skills = serializers.SlugRelatedField(
+        required=False,
+        many=True,
+        queryset=Skill.objects.all(),
+        slug_field="name"
+    )
     class Meta:
         model = Vacancy
-        exclude = ["skills"]
+        fields = "__all__"
+    def is_valid(self, raise_exception=False):
+        self._skills = self.initial_data.pop("skills")
+        return super().is_valid(raise_exception=raise_exception)
+
+    def create(self, validated_data):
+        vacancies = Vacancy.objects.create(**validated_data)
+
+        for skill in self.skills:
+            skill_obj, _ = Skill.objects.get_or_create(name=skill)
+            vacancy.skills.add(skill_obj)
+
+        vacancy.save()
+        return vacancy
+
