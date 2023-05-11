@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count, Avg
 
 from vacancies.models import Vacancy, Skill
-from vacancies.serializers import VacancySerializer, VacancyDetailSerializer
+from vacancies.serializers import VacancyListSerializer, VacancyDetailSerializer, VacancyCreateSerializer
 
 def hello(request):
     return HttpResponse("Hello World!")
@@ -62,7 +62,7 @@ class VacancyListView(ListView):
         list(map(lambda x: setattr(x, "username", x.user.username if x.user else None), page_obj))
 
         response = {
-            "items": VacancySerializer(page_obj, many=True).data,
+            "items": VacancyListSerializer(page_obj, many=True).data,
             "num_pages": paginator.num_pages,
             "total": paginator.count
         }
@@ -93,20 +93,25 @@ class VacancyCreateView(CreateView):
     model = Vacancy
     fields = ["user", "slug", "text", "status", "created", "skills"]
     def post(self, request, *args, **kwargs):
-        vacancy_data = json.loads(request.body)
+        vacancy_data = VacancyCreateSerializer(data=json.loads(request.body))
+        if vacancy_data.is_valid():
+            vacancy_data.save()
+        else:
+            return JsonResponse(vacancy_data.errors)
 
-        vacancy = Vacancy.objects.create(
-            user_id=vacancy_data["user_id"],
-            slug=vacancy_data["slug"],
-            text=vacancy_data["text"],
-            status=vacancy_data["status"]
-        )
-        vacancy.text = vacancy_data["text"]
-
-        return JsonResponse({
-            "id": vacancy.id,
-            "text": vacancy.text
-            })
+        # vacancy = Vacancy.objects.create(
+        #     user_id=vacancy_data["user_id"],
+        #     slug=vacancy_data["slug"],
+        #     text=vacancy_data["text"],
+        #     status=vacancy_data["status"]
+        # )
+        # vacancy.text = vacancy_data["text"]
+        #
+        # return JsonResponse({
+        #     "id": vacancy.id,
+        #     "text": vacancy.text
+        #     })
+        return JsonResponse(vacancy_data.data)
 
 @method_decorator(csrf_exempt, name="dispatch")
 class VacancyUpdateView(UpdateView):
