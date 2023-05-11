@@ -10,10 +10,10 @@ from django.views.generic import DetailView, ListView, CreateView, UpdateView, D
 from amazing_hunting import settings
 from django.contrib.auth.models import User
 from django.db.models import Count, Avg
-from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, UpdateAPIView
 
 from vacancies.models import Vacancy, Skill
-from vacancies.serializers import VacancyListSerializer, VacancyDetailSerializer, VacancyCreateSerializer
+from vacancies.serializers import VacancyListSerializer, VacancyDetailSerializer, VacancyCreateSerializer, VacancyUpdateSerializer, VacancyDestroySerializer
 
 def hello(request):
     return HttpResponse("Hello World!")
@@ -120,46 +120,50 @@ class VacancyCreateView(CreateAPIView):
     #     return JsonResponse(vacancy_data.data)
 
 @method_decorator(csrf_exempt, name="dispatch")
-class VacancyUpdateView(UpdateView):
+class VacancyUpdateView(UpdateAPIView):
+    queryset = Vacancy.objects.all()
+    serializer_class = VacancyUpdateSerializer
 
-    model = Vacancy
-    fields = ["slug", "text", "status", "skills"]
-    def patch(self, request, *args, **kwargs):
-        super().post(request, *args, **kwargs)
-
-        vacancy_data = json.loads(request.body)
-        self.object.slug=vacancy_data["slug"]
-        self.object.text=vacancy_data["text"]
-        self.object.status=vacancy_data["status"]
-
-        for skill in vacancy_data["skills"]:
-            try:
-                skill_obj = Skill.objects.get(name=skill)
-            except Skill.DoesNotExist:
-                return JsonResponse({"error": "Skill not found"}, status=404)
-            self.object.skills.add(skill_obj)
-
-        self.object.save()
-
-        return JsonResponse({
-            "id": self.object.id,
-            "text": self.object.text,
-            "slug": self.object.slug,
-            "status": self.object.status,
-            "created": self.object.created,
-            "user": self.object.user_id,
-            "skills": list(self.object.skills.all().values_list("name", flat=True)),
-        })
+    # model = Vacancy
+    # fields = ["slug", "text", "status", "skills"]
+    # def patch(self, request, *args, **kwargs):
+    #     super().post(request, *args, **kwargs)
+    #
+    #     vacancy_data = json.loads(request.body)
+    #     self.object.slug=vacancy_data["slug"]
+    #     self.object.text=vacancy_data["text"]
+    #     self.object.status=vacancy_data["status"]
+    #
+    #     for skill in vacancy_data["skills"]:
+    #         try:
+    #             skill_obj = Skill.objects.get(name=skill)
+    #         except Skill.DoesNotExist:
+    #             return JsonResponse({"error": "Skill not found"}, status=404)
+    #         self.object.skills.add(skill_obj)
+    #
+    #     self.object.save()
+    #
+    #     return JsonResponse({
+    #         "id": self.object.id,
+    #         "text": self.object.text,
+    #         "slug": self.object.slug,
+    #         "status": self.object.status,
+    #         "created": self.object.created,
+    #         "user": self.object.user_id,
+    #         "skills": list(self.object.skills.all().values_list("name", flat=True)),
+    #     })
         # Не может ссылаться на ManyReltatedManager (таблица ManyToMany), поэтому выгружаем список навыков
 @method_decorator(csrf_exempt, name="dispatch")
-class VacancyDeleteView(DeleteView):
-    model = Vacancy
-    success_url = "/"
+class VacancyDeleteView(DestroyAPIView):
+    # model = Vacancy
+    # success_url = "/"
+    queryset = Vacancy.objects.all()
+    serializer_class = VacancyDestroySerializer
 
-    def delete(self, request, *args, **kwargs):
-        super().delete(request, *args, **kwargs)
-
-        return JsonResponse({"status": "ok"}, status=200)
+    # def delete(self, request, *args, **kwargs):
+    #     super().delete(request, *args, **kwargs)
+    #
+    #     return JsonResponse({"status": "ok"}, status=200)
 
 class UserVacancyDetailView(View):
     def get(self, request):
