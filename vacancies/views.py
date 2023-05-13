@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 from amazing_hunting import settings
 from django.contrib.auth.models import User
-from django.db.models import Count, Avg
+from django.db.models import Count, Avg, Q
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.viewsets import ModelViewSet
 
@@ -34,11 +34,16 @@ class VacancyListView(ListAPIView):
                 text__icontains=vacancy_text
             )
 
-        skill_name = request.GET.get("skill", None)
-        if skill_name:
-            self.queryset.filter(
-                skills__name__icontains=skill_name
-            )
+        skills = request.GET.getlist("skill", None)
+        skills_q = None
+        for skill in skills:
+            if skills_q is None:
+                skills_q = Q(skills__name__icontains=skill)
+            else:
+                skills_q |= Q(skills__name__icontains=skill)
+
+        if skills_q:
+            self.queryset = self.queryset.filter(skills_q)
 
         return super().get(request, *args, **kwargs)
 
