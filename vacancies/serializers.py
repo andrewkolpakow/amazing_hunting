@@ -10,6 +10,11 @@ from vacancies.models import Vacancy, Skill
 #     created = serializers.DateField()
 #     username = serializers.CharField(max_length=100)
 
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = '__all__'
+
 class VacancyListSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
     skills = serializers.SlugRelatedField(

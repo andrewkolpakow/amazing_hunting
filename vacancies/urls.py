@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path
-from vacancies.views import VacancyDetailView, VacancyListView, VacancyCreateView, VacancyUpdateView, VacancyDeleteView, UserVacancyDetailView
+from rest_framework import routers
+from vacancies.views import VacancyDetailView, VacancyListView, VacancyCreateView, VacancyUpdateView, \
+    VacancyDeleteView, UserVacancyDetailView, SkillsViewSet
 
 urlpatterns = [
     path("", VacancyListView.as_view()),
@@ -11,3 +13,4 @@ urlpatterns = [
     path("by_user/", UserVacancyDetailView.as_view()),
 
 ]
+

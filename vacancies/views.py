@@ -11,18 +11,30 @@ from amazing_hunting import settings
 from django.contrib.auth.models import User
 from django.db.models import Count, Avg
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.viewsets import ModelViewSet
 
 from vacancies.models import Vacancy, Skill
-from vacancies.serializers import VacancyListSerializer, VacancyDetailSerializer, VacancyCreateSerializer, VacancyUpdateSerializer, VacancyDestroySerializer
+from vacancies.serializers import VacancyListSerializer, VacancyDetailSerializer, VacancyCreateSerializer, VacancyUpdateSerializer, VacancyDestroySerializer, SkillSerializer
 
 def hello(request):
     return HttpResponse("Hello World!")
 
-
+class SkillsViewSet(ModelViewSet):
+    queryset = Skill.objects.all()
+    serializer_class = SkillSerializer
 class VacancyListView(ListAPIView):
     #model = Vacancy
     queryset = Vacancy.objects.all()
     serializer_class = VacancyListSerializer
+
+    def get(self, request, *args, **kwargs):
+        vacancy_text = request.GET.get('text', None)
+        if vacancy_text:
+            self.queryset = self.queryset.filter(
+                text__icontains=vacancy_text
+            )
+
+        return super().get(request, *args, **kwargs)
 
     # def get(self, request, *args, **kwargs):
     #     super().get(request, *args, **kwargs)
