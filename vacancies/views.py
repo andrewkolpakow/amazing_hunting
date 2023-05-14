@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 from amazing_hunting import settings
 from django.contrib.auth.models import User
-from django.db.models import Count, Avg, Q
+from django.db.models import Count, Avg, Q, F
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.viewsets import ModelViewSet
 
@@ -212,3 +212,12 @@ class UserVacancyDetailView(View):
         }
 
         return JsonResponse(response)
+
+class VacancyLikeView(UpdateAPIView):
+    queryset = Vacancy.objects.all()
+    serializer_class = VacancyDetailSerializer
+
+    def put(self, request, *args, **kwargs):
+        Vacancy.objects.filter(pk__in=request.data).update(likes=F('likes') + 1)
+
+        return JsonResponse(VacancyDetailSerializer(Vacancy.objects.filter(pk__in=request.data), many=True).data, safe=False)
