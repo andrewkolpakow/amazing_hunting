@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count, Avg, Q, F
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
 
 from vacancies.models import Vacancy, Skill
 from vacancies.serializers import VacancyListSerializer, VacancyDetailSerializer, VacancyCreateSerializer, VacancyUpdateSerializer, VacancyDestroySerializer, SkillSerializer
@@ -98,6 +99,7 @@ class VacancyDetailView(RetrieveAPIView):
     #model = Vacancy
     queryset = Vacancy.objects.all()
     serializer_class = VacancyDetailSerializer
+    permission_classes = [IsAuthenticated]
 
     # def get(self, request, *args, **kwargs):
     #     vacancy = self.get_object()
