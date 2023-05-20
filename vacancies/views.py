@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from vacancies.models import Vacancy, Skill
 from vacancies.serializers import VacancyListSerializer, VacancyDetailSerializer, VacancyCreateSerializer, VacancyUpdateSerializer, VacancyDestroySerializer, SkillSerializer
+from vacancies.permissions import VacancyCreatePermission
 
 def hello(request):
     return HttpResponse("Hello World!")
@@ -121,6 +122,7 @@ class VacancyCreateView(CreateAPIView):
 
     queryset = Vacancy.objects.all()
     serializer_class = VacancyCreateSerializer
+    permission_classes = [IsAuthenticated, VacancyCreatePermission]
     # model = Vacancy
     # fields = ["user", "slug", "text", "status", "created", "skills"]
     # def post(self, request, *args, **kwargs):
