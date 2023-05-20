@@ -8,11 +8,13 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 from amazing_hunting import settings
-from django.contrib.auth.models import User
+#from django.contrib.auth.models import User
+from authentication.models import User
 from django.db.models import Count, Avg, Q, F
 from rest_framework.generics import ListAPIView, RetrieveAPIView, DestroyAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 
 from vacancies.models import Vacancy, Skill
 from vacancies.serializers import VacancyListSerializer, VacancyDetailSerializer, VacancyCreateSerializer, VacancyUpdateSerializer, VacancyDestroySerializer, SkillSerializer
@@ -192,30 +194,33 @@ class VacancyDeleteView(DestroyAPIView):
     #
     #     return JsonResponse({"status": "ok"}, status=200)
 
-class UserVacancyDetailView(View):
-    def get(self, request):
-        user_qs = User.objects.annotate(vacancies=Count('vacancy'))
+#class UserVacancyDetailView(View):
+    #def get(self, request):
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_vacancies(request):
+    user_qs = User.objects.annotate(vacancies=Count('vacancy'))
 
-        paginator = Paginator(user_qs, settings.TOTAL_ON_PAGE)
-        page_number = request.GET.get("page")
-        page_obj = paginator.get_page(page_number)
+    paginator = Paginator(user_qs, settings.TOTAL_ON_PAGE)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
-        users = []
-        for user in page_obj:
-            users.append({
-                "id":user.id,
-                "name":user.username,
-                "vacancies":user.vacancies
-            })
+    users = []
+    for user in page_obj:
+        users.append({
+            "id":user.id,
+            "name":user.username,
+            "vacancies":user.vacancies
+        })
 
-        response = {
-            "items": users,
-            "total": paginator.count,
-            "num_pages": paginator.num_pages,
-            "avg": user_qs.aggregate(avg=Avg("vacancies"))["avg"]
-        }
+    response = {
+        "items": users,
+        "total": paginator.count,
+        "num_pages": paginator.num_pages,
+        "avg": user_qs.aggregate(avg=Avg("vacancies"))["avg"]
+    }
 
-        return JsonResponse(response)
+    return JsonResponse(response)
 
 class VacancyLikeView(UpdateAPIView):
     queryset = Vacancy.objects.all()
